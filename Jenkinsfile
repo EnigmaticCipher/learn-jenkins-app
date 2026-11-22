@@ -1,5 +1,6 @@
 pipeline {
     agent any
+
     stages {
         stage('Build') {
             agent {
@@ -15,11 +16,11 @@ pipeline {
                     npm install
                     npm run build
                 '''
-                }
+            }
         }
-        
+
         stage('Test') {
-             agent {
+            agent {
                 docker {
                     image 'node:20-alpine'
                     reuseNode true
@@ -27,20 +28,23 @@ pipeline {
             }
             steps {
                 sh '''
-                test -f build/index.html
-                npm test
+                    test -f build/index.html
+                    CI=true npm test
+                    ls -la
                 '''
             }
         }
+
         stage('Deploy') {
             steps {
                 echo 'Deploying...'
             }
         }
+    }
+
     post {
-            always {
-                junit 'test-results/junit.xml'
-            }
+        always {
+            junit allowEmptyResults: true, testResults: '**/junit.xml'
         }
     }
 }
