@@ -41,14 +41,16 @@ pipeline {
         stage('Deploy') {
             agent {
                 docker {
-                    image 'node:20-alpine'
+                    image 'node:22-alpine'
                     reuseNode true
                 }
             }
             steps {
                 sh '''
+                    test -n "$NETLIFY_AUTH_TOKEN" && echo "token: défini" || echo "token: VIDE"
+                    echo "site id: $NETLIFY_SITE_ID"
                     npm install netlify-cli --no-save
-                    node_modules/.bin/netlify --version
+                    node_modules/.bin/netlify status
                     node_modules/.bin/netlify deploy --dir=build --prod
                 '''
             }
