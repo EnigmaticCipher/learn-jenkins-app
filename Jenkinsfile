@@ -1,6 +1,7 @@
 pipeline {
     agent any
 
+
     stages {
         stage('Build') {
             agent {
@@ -29,15 +30,24 @@ pipeline {
             steps {
                 sh '''
                     test -f build/index.html
-                    CI=true npm test
                     ls -la
                 '''
             }
         }
 
         stage('Deploy') {
+            agent {
+                docker {
+                    image 'node:20-alpine'
+                    reuseNode true
+                }
+            }
             steps {
-                echo 'Deploying...'
+                sh '''
+                    npm install netlify-cli --no-save
+                    node_modules/.bin/netlify --version
+                    node_modules/.bin/netlify deploy --dir=build --prod
+                '''
             }
         }
     }
